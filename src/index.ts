@@ -43,15 +43,18 @@ import {
   storage_update_metadata
 } from './tools/storage-tools.js';
 
+// Import authentication utilities
+import { initializeAuth, SecurityLevel } from './auth-utils.js';
+
 // Load environment variables
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-// Load and validate Firebase config early
-import './firebase.js';
-
 // Import type from Firestore to use for tools
 import { WhereFilterOp } from 'firebase/firestore';
+
+// Load and validate Firebase config early
+import './firebase.js';
 
 /**
  * Initialize and run the Firebase MCP server
@@ -64,6 +67,10 @@ async function main() {
       configCheck.errors.forEach((error: string) => console.error(`Configuration Error: ${error}`));
       process.exit(1);
     }
+
+    // Initialize authentication
+    await initializeAuth();
+    logger.info(`Server running in ${process.env.SECURITY_LEVEL || SecurityLevel.DEVELOPMENT} security mode`);
 
     // Create a new MCP server with the simplified API
     const server = new McpServer({

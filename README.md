@@ -1,12 +1,14 @@
 # Firebase MCP Server
 
-A Model Context Protocol (MCP) server that provides access to Firebase services. This server allows MCP clients like Claude Desktop or Cursor to interact with Firebase Authentication, Firestore, and Storage.
+A Model Context Protocol (MCP) server implementation for Firebase services. This server allows AI assistants like Claude and Cursor to securely interact with Firebase Auth, Firestore, and Storage.
 
 ## Features
 
-- 🔐 **Authentication**: Create users, sign in/out, update profiles, and more
-- 📋 **Firestore**: Add, query, update, and delete documents
-- 🗄️ **Storage**: Upload files, get download URLs, manage file metadata
+- **Authentication**: Tools for user management, sign-in, and authentication
+- **Firestore Database**: Read, write, query, and manage Firestore documents
+- **Cloud Storage**: Upload, download, and manage files in Firebase Storage
+- **Security**: Configurable security levels with Firestore security rules integration
+- **AI Assistant Integration**: Special authentication for AI assistants like Claude/Cursor
 
 ## Prerequisites
 
@@ -18,7 +20,7 @@ A Model Context Protocol (MCP) server that provides access to Firebase services.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/firebase-mcp.git
+git clone https://github.com/tomcat65/firebase-mcp.git
 cd firebase-mcp
 ```
 
@@ -45,6 +47,9 @@ FIREBASE_APP_ID=your-app-id
 
 # Server configuration
 LOG_LEVEL=info
+
+# Security configuration
+SECURITY_LEVEL=development  # Options: development, testing, production
 ```
 
 You can find these values in your Firebase project settings (Project settings > General > Your apps > SDK setup and configuration).
@@ -137,6 +142,47 @@ Add the following to your project's `.cursor/mcp.json` file:
 - **storage_get_metadata**: Get file metadata
 - **storage_update_metadata**: Update file metadata
 
+## Security Configuration
+
+This project implements multiple security levels to accommodate different usage scenarios:
+
+### Security Levels
+
+Configure the security level in your `.env` file:
+
+```
+SECURITY_LEVEL=development  # Options: development, testing, production
+```
+
+- **Development**: All operations allowed, suitable for local development
+- **Testing**: Basic authentication required, good for staging environments
+- **Production**: Full security rules enforced, required for production deployments
+
+### Firestore Security Rules
+
+The project includes template security rules that allow:
+
+- AI assistants to read data with proper authentication
+- Users to read and write their own data
+- Public access to resources marked as public
+- Secure defaults that deny access unless explicitly allowed
+
+You can customize these rules in the Firebase Console under Firestore > Rules.
+
+### AI Assistant Authentication
+
+For AI assistants to properly access data:
+
+1. Set a secure API key in your `.env` file:
+   ```
+   AI_ASSISTANT_API_KEY=your-secure-random-string
+   ```
+
+2. Optionally, provide a pre-generated Firebase custom token:
+   ```
+   AI_ASSISTANT_TOKEN=your-firebase-custom-token
+   ```
+
 ## Troubleshooting
 
 ### Firebase Authentication Errors
@@ -160,3 +206,8 @@ If you encounter storage errors:
 ## License
 
 [MIT](LICENSE)
+
+## Acknowledgements
+
+- Firebase team for their excellent documentation
+- Model Context Protocol community for the MCP specification
