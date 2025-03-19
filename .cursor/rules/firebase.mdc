@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Very important follow guidelines in [firebase-best-practice-mcp.md](mdc:.docs/firebase-best-practice-mcp.md)
+# Use your tools to research any implementation, use reputable sources like academic papers, official documents, make a summary, use no more than 10 sources, then apply the knowledge using your available tools

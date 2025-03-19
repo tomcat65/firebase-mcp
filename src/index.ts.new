@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+
+/**
+ * Firebase MCP Server
+ *
+ * This server implements the Model Context Protocol (MCP) for Firebase services.
+ * It provides tools for interacting with Firebase Authentication, Firestore, and Storage
+ * through a standardized interface that can be used by AI assistants and other MCP clients.
+ *
+ * @module firebase-mcp
+ */
+
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio';
+import { validateConfig } from './utils/config';
+import { adaptMcpResponse } from './lib/response-adapter';
+import { registerFirestoreHandlers } from './handlers/firestore-handlers';
+import { registerAuthHandlers } from './handlers/auth-handlers';
+import { registerStorageHandlers } from './handlers/storage-handlers';
+import { logger } from './utils/logger';
+
+/**
+ * Initialize and run the Firebase MCP server
+ */
+async function main() {
+  // Validate configuration
+  const configCheck = validateConfig();
+  if (!configCheck.valid) {
+    configCheck.errors.forEach(error => console.error(`Configuration Error: ${error}`));
+    process.exit(1);
+  }
+
+  // Create a new MCP server with the simplified API
+  const server = new McpServer({
+    name: 'firebase-mcp',
+    version: '1.1.0'
+  });
+
+  // Set up error handling
+  server.on('error', (error) => logger.error('[MCP Error]', error));
+
+  // Set up graceful shutdown
+  process.on('SIGINT', async () => {
+    logger.info("Received SIGINT signal, cleaning up...");
+    try {
+      await server.close();
+      logger.info("Server closed successfully");
+      process.exit(0);
+    } catch (err) {
+      logger.error("Error during shutdown:", err);
+      process.exit(1);
+    }
+  });
+
+  process.on('SIGTERM', async () => {
+    logger.info("Received SIGTERM signal, cleaning up...");
+    try {
+      await server.close();
+      logger.info("Server closed successfully");
+      process.exit(0);
+    } catch (err) {
+      logger.error("Error during shutdown:", err);
+      process.exit(1);
+    }
+  });
+
+  // Register handlers from each module
+  registerFirestoreHandlers(server);
+  registerAuthHandlers(server);
+  registerStorageHandlers(server);
+
+  // Start the server using stdio transport
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  logger.info('Firebase MCP server running on stdio');
+}
+
+// Start the server
+main().catch(error => {
+  logger.error('Error starting Firebase MCP server:', error);
+  process.exit(1);
+});
